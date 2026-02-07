@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="3D Bubble Portfolio Museum - An interactive portfolio showcase with floating 3D bubbles">
+    <meta name="author" content="Portfolio Owner">
+    <title>3D Bubble Portfolio Museum</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bubbles.css">
+    <link rel="stylesheet" href="css/content-panel.css">
+    <link rel="stylesheet" href="css/detail-view.css">
+    <link rel="stylesheet" href="css/fallback.css">
+</head>
+<body>
+    <!-- Skip to content link for accessibility -->
+    <a href="#museum-space" class="skip-link">Skip to content</a>
+    
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-content">
+            <h1 class="welcome-title">NYERK</h1>
+            <p class="welcome-subtitle">Interactive Portfolio Bubble Museum</p>
+            <button id="enter-btn" class="enter-button">Enter</button>
+        </div>
+    </div>
+    
+    <!-- Main container -->
+    <main id="app" class="app-container" role="main">
+        <!-- Museum space for 3D transforms -->
+        <div id="museum-space" class="museum-space" aria-label="Interactive 3D portfolio space">
+            <!-- Center 3D Title -->
+            <div class="center-title">NYERK</div>
+            
+            <!-- Bubbles will be dynamically inserted here -->
+        </div>
+        
+        <!-- Content panel overlay -->
+        <aside id="content-panel" class="content-panel" role="dialog" aria-modal="true" aria-hidden="true">
+            <button class="close-btn" aria-label="Close content panel">&times;</button>
+            <div class="content-body">
+                <img class="content-image" src="" alt="" loading="lazy">
+                <h2 class="content-title"></h2>
+                <p class="content-description"></p>
+                <div class="content-actions">
+                    <button class="content-button">View Details</button>
+                    <button class="content-button">Contact</button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Backdrop overlay -->
+        <div class="backdrop" aria-hidden="true"></div>
+        
+        <!-- Detail View Page -->
+        <div id="detail-view" class="detail-view" aria-hidden="true">
+            <button id="back-btn" class="back-button" aria-label="Back to portfolio">
+                <span>←</span> Back
+            </button>
+            
+            <div class="detail-container">
+                <h1 class="detail-title">Portfolio Item Title</h1>
+                
+                <div class="wall-grid">
+                    <div class="wall-box box-1" data-card="overview">
+                        <h3>Overview</h3>
+                        <div class="card-images"></div>
+                        <p>Project overview placeholder text goes here.</p>
+                    </div>
+                    
+                    <div class="wall-box box-2" data-card="gallery">
+                        <h3>Gallery</h3>
+                        <div class="card-images"></div>
+                    </div>
+                    
+                    <div class="wall-box box-3" data-card="technologies">
+                        <h3>Technologies</h3>
+                        <div class="card-images"></div>
+                        <ul>
+                            <li>Technology 1</li>
+                            <li>Technology 2</li>
+                            <li>Technology 3</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="wall-box box-4" data-card="details">
+                        <h3>Details</h3>
+                        <div class="card-images"></div>
+                        <p>Additional details and information placeholder.</p>
+                    </div>
+                    
+                    <div class="wall-box box-5" data-card="links">
+                        <h3>Links</h3>
+                        <div class="card-images"></div>
+                        <a href="#" class="detail-link">View Project</a>
+                        <a href="#" class="detail-link">Source Code</a>
+                    </div>
+                    
+                    <div class="wall-box box-6" data-card="contact">
+                        <h3>Contact</h3>
+                        <div class="card-images"></div>
+                        <p>Get in touch about this project.</p>
+                    </div>
+                    
+                    <div class="wall-box box-7 title-card">
+                        <h2 id="portfolio-title">Portfolio</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- JavaScript Files -->
+    <script src="js/utils.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/BubbleManager.js"></script>
+    <script src="js/CameraController.js"></script>
+    <script src="js/ContentPanel.js"></script>
+    <script src="js/DetailView.js"></script>
+    <script src="js/InteractionHandler.js"></script>
+    <script src="js/PortfolioMuseum.js"></script>
+    <script>
+        /**
+         * Main initialization script for 3D Bubble Portfolio Museum
+         * Initializes the application on DOM ready with error handling
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Handle welcome screen
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const enterBtn = document.getElementById('enter-btn');
+            const museumSpace = document.getElementById('museum-space');
+            
+            // Initially hide museum space
+            museumSpace.style.opacity = '0';
+            
+            // Enter button click handler
+            enterBtn.addEventListener('click', () => {
+                // Fade out welcome screen
+                welcomeScreen.classList.add('hidden');
+                
+                // Fade in museum space after welcome screen fades
+                setTimeout(() => {
+                    museumSpace.style.transition = 'opacity 1s ease';
+                    museumSpace.style.opacity = '1';
+                    
+                    // Initialize the museum after animation
+                    initializeMuseum();
+                }, 400);
+            });
+            
+            // Function to initialize the museum
+            function initializeMuseum() {
+                // Get container element
+                const container = document.getElementById('museum-space');
+                if (!container) {
+                    console.error('Museum space container not found');
+                    return;
+                }
+                
+                // Validate portfolio data exists
+                if (typeof portfolioData === 'undefined') {
+                    console.error('Portfolio data not loaded');
+                    container.innerHTML = 
+                        '<p style="color: white; text-align: center; padding: 2rem;">' +
+                        'Portfolio data failed to load. Please refresh the page.</p>';
+                    return;
+                }
+                
+                // Validate portfolio data structure
+                if (typeof validatePortfolioData === 'function') {
+                    const validation = validatePortfolioData(portfolioData);
+                    if (!validation.isValid) {
+                        console.error('Portfolio data validation failed:', validation.errors);
+                        container.innerHTML = 
+                            '<p style="color: white; text-align: center; padding: 2rem;">' +
+                            'Portfolio data is invalid. Please check the console for details.</p>';
+                        return;
+                    }
+                }
+                
+                // Check minimum data requirements
+                if (!Array.isArray(portfolioData) || portfolioData.length < 1) {
+                    console.error('Portfolio data must be a non-empty array');
+                    container.innerHTML = 
+                        '<p style="color: white; text-align: center; padding: 2rem;">' +
+                        'No portfolio items found. Please add portfolio data.</p>';
+                    return;
+                }
+                
+                // Initialize DetailView
+                const detailView = new DetailView();
+                window.detailView = detailView;
+                
+                // Feature detection for 3D transforms
+                if (!supports3D()) {
+                    console.warn('3D transforms not supported. Using 2D fallback layout.');
+                    
+                    // Get content panel for fallback
+                    const contentPanel = new ContentPanel();
+                    
+                    // Create 2D fallback layout
+                    create2DFallback(container, portfolioData, (item) => {
+                        contentPanel.show(item);
+                    });
+                    
+                    // Store content panel globally for debugging
+                    window.contentPanel = contentPanel;
+                    
+                    return;
+                }
+                
+                // Initialize Portfolio Museum with error handling
+                try {
+                    const museum = new PortfolioMuseum({
+                        container: container,
+                        data: portfolioData
+                    });
+                    
+                    museum.init();
+                    
+                    console.log(`Portfolio Museum initialized with ${portfolioData.length} items`);
+                    
+                    // Store museum instance globally for debugging
+                    window.portfolioMuseum = museum;
+                    
+                    // Connect "View Details" button after museum is initialized
+                    setTimeout(() => {
+                        const viewDetailsBtn = document.querySelector('.content-button:first-child');
+                        if (viewDetailsBtn) {
+                            console.log('View Details button found, attaching listener');
+                            viewDetailsBtn.addEventListener('click', () => {
+                                console.log('View Details clicked');
+                                const contentPanel = museum.contentPanel;
+                                if (contentPanel && contentPanel.isOpen && contentPanel.currentData) {
+                                    // Close content panel
+                                    contentPanel.hide();
+                                    // Show detail view
+                                    setTimeout(() => {
+                                        detailView.show(contentPanel.currentData);
+                                    }, 400);
+                                }
+                            });
+                        } else {
+                            console.error('View Details button not found');
+                        }
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Failed to initialize Portfolio Museum:', error);
+                    container.innerHTML = 
+                        '<p style="color: white; text-align: center; padding: 2rem;">' +
+                        'Failed to load portfolio: ' + error.message + '<br>' +
+                        'Please refresh the page or check the console for details.</p>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

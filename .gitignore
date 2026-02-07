@@ -1,0 +1,16 @@
+# Exclude all markdown files
+*.md
+
+# Exclude .kiro directory
+.kiro/
+
+# Node modules (if any)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
