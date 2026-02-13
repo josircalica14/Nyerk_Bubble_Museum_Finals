@@ -26,7 +26,8 @@ class DetailView {
     
     // Hallway boundaries
     this.hallwayLength = 2800; // Total length of hallway (title card is at -2400)
-    this.hallwayWidth = 300; // Width boundaries (left/right)
+    this.hallwayWidth = 500; // Width boundaries (left/right) - wider hallway
+    this.hallwayForwardLimit = 600; // Forward boundary (entrance)
     
     // Movement state
     this.keys = { w: false, a: false, s: false, d: false };
@@ -72,6 +73,24 @@ class DetailView {
     
     // Apply color theme based on portfolio color
     this.applyColorTheme(data.color, data);
+    
+    // Add special info card for Kylabidaboo and adjust hallway
+    if (data.title && data.title.toLowerCase().includes('kylabidaboo')) {
+      this.addKylabidabooInfoCard(data.color);
+      // Adjust starting position to be further back to see entrance cards
+      this.position = { x: 0, y: 0, z: 1400 };
+      this.targetPosition = { x: 0, y: 0, z: 1400 };
+      // Extend hallway boundaries for entrance cards
+      this.hallwayLength = 3300; // Extended backward to accommodate title card
+      this.hallwayForwardLimit = 1500; // Extended forward for entrance area
+    } else {
+      // Reset to default starting position
+      this.position = { x: 0, y: 0, z: 600 };
+      this.targetPosition = { x: 0, y: 0, z: 600 };
+      // Reset to default hallway length
+      this.hallwayLength = 2800;
+      this.hallwayForwardLimit = 600;
+    }
     
     // Load images from portfolio folder
     this.loadPortfolioImages(data);
@@ -341,16 +360,21 @@ class DetailView {
     const existingArc = this.wallGrid.querySelector('.entrance-arch');
     if (existingArc) existingArc.remove();
     
+    // Determine arch position based on whether there are entrance cards
+    // Check if this portfolio has entrance cards (like Kylabidaboo)
+    const hasEntranceCards = data.title && data.title.toLowerCase().includes('kylabidaboo');
+    const archZPosition = hasEntranceCards ? 1100 : 700; // Move arch further forward if entrance cards exist
+    
     // Create container with overflow to hide bottom line only
     const archContainer = document.createElement('div');
     archContainer.className = 'entrance-arch';
     archContainer.style.cssText = `
       position: absolute;
-      left: -625px;
-      top: -440px;
-      width: 1250px;
-      height: 615px;
-      transform: translateZ(700px);
+      left: -825px;
+      top: -540px;
+      width: 1650px;
+      height: 715px;
+      transform: translateZ(${archZPosition}px);
       transform-style: preserve-3d;
       overflow: hidden;
       pointer-events: none;
@@ -362,11 +386,11 @@ class DetailView {
       position: absolute;
       left: 75px;
       top: 75px;
-      width: 1100px;
-      height: 565px;
+      width: 1500px;
+      height: 750px;
       border: 6px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8);
       border-bottom: none;
-      border-radius: 550px 550px 0 0;
+      border-radius: 750px 750px 0 0;
       box-shadow: 
         0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1),
         0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
@@ -464,6 +488,80 @@ class DetailView {
     document.head.appendChild(archStyle);
     
     this.wallGrid.appendChild(archContainer);
+    
+    // Add glowing floor edges with accent color (all 4 sides)
+    const existingFloorEdges = this.wallGrid.querySelectorAll('.floor-edge');
+    existingFloorEdges.forEach(edge => edge.remove());
+    
+    // Use the same hasEntranceCards check for floor edges
+    const floorTopPos = hasEntranceCards ? -3000 : -2000;
+    const floorHeight = hasEntranceCards ? 5500 : 4000;
+    const startEdgeY = hasEntranceCards ? 2500 : 2000;
+    const endEdgeY = hasEntranceCards ? -3000 : -2000;
+    const floorTranslateZ = hasEntranceCards ? -450 : -200;
+    
+    // Extend the actual floor (CSS) if entrance cards exist
+    if (hasEntranceCards) {
+      // Remove any existing floor extension first
+      const existingFloorExt = document.querySelector('.dynamic-floor-extension');
+      if (existingFloorExt) existingFloorExt.remove();
+      
+      const floorExtStyle = document.createElement('style');
+      floorExtStyle.className = 'dynamic-floor-extension';
+      floorExtStyle.textContent = `
+        #detail-view .wall-grid::before {
+          top: -3000px !important;
+          height: 5500px !important;
+          transform: rotateX(90deg) translateZ(-450px) !important;
+          box-shadow: 
+            inset 0 0 0 4px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
+            inset 0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
+            inset 0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) !important;
+        }
+      `;
+      document.head.appendChild(floorExtStyle);
+    } else {
+      // Remove floor extension if it exists (for non-entrance portfolios)
+      const existingFloorExt = document.querySelector('.dynamic-floor-extension');
+      if (existingFloorExt) existingFloorExt.remove();
+      
+      // Add glowing border for normal floor
+      const floorBorderStyle = document.createElement('style');
+      floorBorderStyle.className = 'dynamic-floor-extension';
+      floorBorderStyle.textContent = `
+        #detail-view .wall-grid::before {
+          box-shadow: 
+            inset 0 0 0 4px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
+            inset 0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
+            inset 0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) !important;
+        }
+      `;
+      document.head.appendChild(floorBorderStyle);
+    }
+    
+    // Remove the separate edge elements since we're using floor border now
+    const leftEdge = null;
+    const rightEdge = null;
+    const startEdge = null;
+    const endEdge = null;
+    
+    // Add edge glow animation
+    const edgeStyle = document.createElement('style');
+    edgeStyle.textContent = `
+      @keyframes edgeGlow {
+        0% {
+          box-shadow: 
+            0 0 15px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1),
+            0 0 30px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8);
+        }
+        100% {
+          box-shadow: 
+            0 0 25px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1),
+            0 0 50px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1);
+        }
+      }
+    `;
+    document.head.appendChild(edgeStyle);
     
     // Set dark base background
     this.detailView.style.background = `
@@ -614,10 +712,98 @@ class DetailView {
   }
   
   /**
+   * Add special info card for Kylabidaboo's portfolio
+   * @param {string} color - Accent color for the card
+   */
+  addKylabidabooInfoCard(color) {
+    // Remove existing info card if any
+    const existingCard = this.wallGrid.querySelector('.box-8');
+    if (existingCard) existingCard.remove();
+    
+    // Convert hex to RGB
+    const hexToRgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    };
+    
+    const rgb = hexToRgb(color);
+    if (!rgb) return;
+    
+    // Create the info card
+    const infoCard = document.createElement('div');
+    infoCard.className = 'wall-box box-8 info-card';
+    infoCard.innerHTML = `
+      <h3>About</h3>
+      <div class="info-content">
+        <p class="info-label">Fullname:</p>
+        <p class="info-value">Princess Kyla Gosim Brioso</p>
+        
+        <p class="info-label">Age:</p>
+        <p class="info-value">22</p>
+        
+        <p class="info-label">Birthday:</p>
+        <p class="info-value">Feb. 4, 2004</p>
+        
+        <p class="info-label">Ethnic:</p>
+        <p class="info-value">Bicolana, Caviteña</p>
+      </div>
+    `;
+    
+    // Apply accent color border
+    infoCard.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+    
+    this.wallGrid.appendChild(infoCard);
+  }
+  
+  /**
    * Hide the detail view
    */
   hide() {
     if (!this.isOpen) return;
+    
+    // Clean up ALL dynamic styles that might affect the main museum
+    const dynamicFloorStyle = document.querySelector('.dynamic-floor-style');
+    if (dynamicFloorStyle) dynamicFloorStyle.remove();
+    
+    const dynamicFloorExt = document.querySelector('.dynamic-floor-extension');
+    if (dynamicFloorExt) dynamicFloorExt.remove();
+    
+    // Remove all dynamically created style elements from detail view
+    const dynamicStyles = document.querySelectorAll('style');
+    dynamicStyles.forEach(style => {
+      // Only remove styles that contain detail-view specific animations or modifications
+      if (style.textContent && (
+        style.textContent.includes('floatParticle') ||
+        style.textContent.includes('shootingStar') ||
+        style.textContent.includes('archGlow') ||
+        style.textContent.includes('arcLight') ||
+        style.textContent.includes('edgeGlow') ||
+        style.textContent.includes('.wall-grid::before') ||
+        style.textContent.includes('#detail-view')
+      )) {
+        style.remove();
+      }
+    });
+    
+    // Remove particle background
+    const particleBg = this.detailView.querySelector('.detail-particle-background');
+    if (particleBg) particleBg.remove();
+    
+    // Remove entrance arch
+    const entranceArch = this.wallGrid.querySelector('.entrance-arch');
+    if (entranceArch) entranceArch.remove();
+    
+    // Remove floor edges
+    const floorEdges = this.wallGrid.querySelectorAll('.floor-edge');
+    floorEdges.forEach(edge => edge.remove());
+    
+    // Remove info card
+    const infoCard = this.wallGrid.querySelector('.box-8');
+    if (infoCard) infoCard.remove();
     
     // Hide detail view
     this.detailView.classList.remove('active');
@@ -825,7 +1011,7 @@ class DetailView {
     this.targetPosition.x = Math.max(-this.hallwayWidth, Math.min(this.hallwayWidth, this.targetPosition.x));
     
     // Limit forward/backward movement (Z axis) - can't go past entrance or end
-    this.targetPosition.z = Math.max(-this.hallwayLength, Math.min(600, this.targetPosition.z));
+    this.targetPosition.z = Math.max(-this.hallwayLength, Math.min(this.hallwayForwardLimit, this.targetPosition.z));
     
     // Keep Y at 0 (no vertical movement)
     this.targetPosition.y = 0;

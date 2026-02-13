@@ -100,14 +100,14 @@
 .wall-grid::before {
   content: '';
   position: absolute;
-  left: -600px;
+  left: -800px;
   top: -2000px;
-  width: 1200px;
+  width: 1600px;
   height: 4000px;
   background: linear-gradient(to bottom,
-    rgba(15, 20, 40, 0.5) 0%,
-    rgba(10, 15, 30, 0.6) 50%,
-    rgba(5, 10, 20, 0.7) 100%);
+    rgba(5, 8, 15, 0.95) 0%,
+    rgba(3, 5, 10, 0.97) 50%,
+    rgba(2, 3, 8, 0.98) 100%);
   border-left: 2px solid rgba(100, 200, 255, 0.2);
   border-right: 2px solid rgba(100, 200, 255, 0.2);
   transform-style: preserve-3d;
@@ -172,19 +172,19 @@
 .wall-box.box-1 {
   left: -225px;
   top: -350px;
-  transform: translateX(-500px) translateZ(-200px) rotateY(90deg);
+  transform: translateX(-700px) translateZ(-200px) rotateY(90deg);
 }
 
 .wall-box.box-3 {
   left: -225px;
   top: -350px;
-  transform: translateX(-500px) translateZ(-900px) rotateY(90deg);
+  transform: translateX(-700px) translateZ(-900px) rotateY(90deg);
 }
 
 .wall-box.box-5 {
   left: -225px;
   top: -350px;
-  transform: translateX(-500px) translateZ(-1600px) rotateY(90deg);
+  transform: translateX(-700px) translateZ(-1600px) rotateY(90deg);
 }
 
 /* RIGHT WALL CARDS - Mounted on right wall, facing inward */
@@ -193,19 +193,58 @@
 .wall-box.box-2 {
   left: -225px;
   top: -350px;
-  transform: translateX(500px) translateZ(-200px) rotateY(-90deg);
+  transform: translateX(700px) translateZ(-200px) rotateY(-90deg);
 }
 
 .wall-box.box-4 {
   left: -225px;
   top: -350px;
-  transform: translateX(500px) translateZ(-900px) rotateY(-90deg);
+  transform: translateX(700px) translateZ(-900px) rotateY(-90deg);
 }
 
 .wall-box.box-6 {
   left: -225px;
   top: -350px;
-  transform: translateX(500px) translateZ(-1600px) rotateY(-90deg);
+  transform: translateX(700px) translateZ(-1600px) rotateY(-90deg);
+}
+
+/* Info card - transparent with accent border on right wall */
+/* Positioned near entrance, after the arc with same 700px spacing as main cards */
+.wall-box.box-8 {
+  left: -225px;
+  top: -350px;
+  transform: translateX(700px) translateZ(500px) rotateY(-90deg);
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.wall-box.box-8 h3 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.info-content {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+}
+
+.info-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  text-align: right;
+  margin: 0;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  font-weight: 500;
 }
 
 @keyframes titleGlow {
