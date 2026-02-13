@@ -27,7 +27,7 @@ const portfolioData = [
     title: "CupofJay",
     description: "CupofJay - A creative portfolio showcasing innovative designs and artistic expressions.",
     image: "assets/images/cupofjay.jpg",
-    color: "#4A90E2",
+    color: "#0000FF",
     folder: "cupofjay" // Folder: assets/portfolios/cupofjay/
   },
   {
@@ -51,7 +51,7 @@ const portfolioData = [
     title: "Bonchan",
     description: "Bonchan - Artistic excellence and creative mastery in every project.",
     image: "assets/images/bonchan.jpg",
-    color: "#E2904A",
+    color: "#FF4500",
     folder: "bonchan"
   },
   {
@@ -59,7 +59,7 @@ const portfolioData = [
     title: "Beyl",
     description: "Beyl - Cutting-edge designs that blend functionality with aesthetic appeal.",
     image: "assets/images/beyl.jpg",
-    color: "#4AE290",
+    color: "#FFD700",
     folder: "beyl"
   },
   {
@@ -67,7 +67,7 @@ const portfolioData = [
     title: "Juan.through.tree",
     description: "Juan.through.tree - Nature-inspired creativity and organic design philosophy.",
     image: "assets/images/juan.jpg",
-    color: "#904AE2",
+    color: "#8B4513",
     folder: "juan"
   },
   {
@@ -75,7 +75,7 @@ const portfolioData = [
     title: "Shine",
     description: "Shine - Brilliant concepts that illuminate the path to creative excellence.",
     image: "assets/images/shine.jpg",
-    color: "#E2E24A",
+    color: "#FFFFFF",
     folder: "shine"
   },
   {
@@ -83,7 +83,7 @@ const portfolioData = [
     title: "Mfghozt",
     description: "Mfghozt - Mysterious and captivating designs that leave a lasting impression.",
     image: "assets/images/mfghozt.jpg",
-    color: "#4AE2E2",
+    color: "#000000",
     folder: "mfghozt"
   },
   {
@@ -91,7 +91,7 @@ const portfolioData = [
     title: "Cian",
     description: "Cian - Bold and dynamic creative solutions for the modern world.",
     image: "assets/images/cian.jpg",
-    color: "#E24AE2",
+    color: "#FF8C00",
     folder: "cian"
   },
   {
@@ -99,7 +99,7 @@ const portfolioData = [
     title: "Well Known Renjard",
     description: "Well Known Renjard - Renowned for exceptional quality and innovative thinking.",
     image: "assets/images/renjard.jpg",
-    color: "#4A4AE2",
+    color: "#9400D3",
     folder: "renjard"
   },
   {
@@ -107,7 +107,7 @@ const portfolioData = [
     title: "Pibee",
     description: "Pibee - Sweet and delightful designs that bring joy to every project.",
     image: "assets/images/pibee.jpg",
-    color: "#FF6B9D",
+    color: "#00CED1",
     folder: "pibee"
   },
   {
@@ -115,7 +115,7 @@ const portfolioData = [
     title: "Jem",
     description: "Jem - Precious and refined creative works that sparkle with originality.",
     image: "assets/images/jem.jpg",
-    color: "#9D6BFF",
+    color: "#4B0082",
     folder: "jem"
   },
   {
@@ -123,7 +123,7 @@ const portfolioData = [
     title: "KCCalip",
     description: "KCCalip - Professional excellence and creative innovation in every detail.",
     image: "assets/images/kccalip.jpg",
-    color: "#6BFFA5",
+    color: "#32CD32",
     folder: "kccalip"
   },
   {
@@ -131,7 +131,7 @@ const portfolioData = [
     title: "Alyssa",
     description: "Alyssa - Elegant and sophisticated designs that embody timeless beauty.",
     image: "assets/images/alyssa.jpg",
-    color: "#FFA56B",
+    color: "#FF6347",
     folder: "alyssa"
   }
 ];

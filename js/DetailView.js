@@ -69,6 +69,9 @@ class DetailView {
       portfolioTitle.textContent = `${data.title}'s Portfolio`;
     }
     
+    // Apply color theme based on portfolio color
+    this.applyColorTheme(data.color, data);
+    
     // Load images from portfolio folder
     this.loadPortfolioImages(data);
     
@@ -99,12 +102,307 @@ class DetailView {
   }
   
   /**
+   * Apply color theme to detail view based on portfolio color
+   * @param {string} color - Hex color code
+   * @param {Object} data - Portfolio item data
+   */
+  applyColorTheme(color, data) {
+    if (!color) return;
+    
+    // Convert hex to RGB for alpha variations
+    const hexToRgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    };
+    
+    const rgb = hexToRgb(color);
+    if (!rgb) return;
+    
+    // Remove any existing particle background
+    const existingBg = this.detailView.querySelector('.detail-particle-background');
+    if (existingBg) existingBg.remove();
+    
+    // Create particle background container
+    const particleBg = document.createElement('div');
+    particleBg.className = 'detail-particle-background';
+    particleBg.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    `;
+    
+    // Create small flying particles with accent color
+    for (let i = 0; i < 30; i++) {
+      const particle = document.createElement('div');
+      const size = Math.random() * 8 + 4; // Small particles: 4-12px
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const duration = Math.random() * 15 + 10; // 10-25s animation
+      const delay = Math.random() * 5;
+      const opacity = Math.random() * 0.4 + 0.2; // 0.2-0.6 opacity
+      
+      // Random movement pattern
+      const moveX = (Math.random() - 0.5) * 200; // -100 to 100px
+      const moveY = (Math.random() - 0.5) * 200;
+      
+      particle.style.cssText = `
+        position: absolute;
+        width: ${size}px;
+        height: ${size}px;
+        left: ${x}%;
+        top: ${y}%;
+        background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity});
+        border-radius: 50%;
+        box-shadow: 0 0 ${size * 2}px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6);
+        animation: floatParticle${i} ${duration}s ease-in-out ${delay}s infinite;
+      `;
+      
+      particleBg.appendChild(particle);
+      
+      // Create unique animation for each particle
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes floatParticle${i} {
+          0%, 100% { 
+            transform: translate(0, 0) scale(1);
+            opacity: ${opacity};
+          }
+          25% { 
+            transform: translate(${moveX * 0.5}px, ${moveY * 0.3}px) scale(1.2);
+            opacity: ${opacity * 1.5};
+          }
+          50% { 
+            transform: translate(${moveX}px, ${moveY}px) scale(0.8);
+            opacity: ${opacity * 0.7};
+          }
+          75% { 
+            transform: translate(${moveX * 0.3}px, ${moveY * 0.7}px) scale(1.1);
+            opacity: ${opacity * 1.2};
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Add flying PNG images from portfolio background folder with shooting star effect
+    const folder = data.folder || data.id;
+    const backgroundPath = `assets/portfolios/${folder}/background/`;
+    
+    // First, collect available images
+    const availableImages = [];
+    const maxImagesToCheck = 10;
+    
+    // Create a promise-based image loader to check which images exist
+    const checkImage = (path) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(path);
+        img.onerror = () => resolve(null);
+        img.src = path;
+      });
+    };
+    
+    // Load available images and create 8-10 shooting stars
+    const numShootingStars = Math.floor(Math.random() * 3) + 8; // 8-10 shooting stars
+    
+    // Check which images exist (1.png through 10.png)
+    Promise.all(
+      Array.from({ length: maxImagesToCheck }, (_, i) => 
+        checkImage(`${backgroundPath}${i + 1}.png`)
+      )
+    ).then(results => {
+      const validImages = results.filter(path => path !== null);
+      
+      // If no images found, skip
+      if (validImages.length === 0) {
+        console.log('No background images found for', folder);
+        return;
+      }
+      
+      console.log(`Found ${validImages.length} background images for ${folder}`);
+      
+      // Create 8-10 shooting stars, cycling through available images
+      for (let i = 0; i < numShootingStars; i++) {
+        const imgElement = document.createElement('img');
+        const imgPath = validImages[i % validImages.length]; // Cycle through available images
+        
+        // Bigger size for shooting stars
+        const size = Math.random() * 40 + 60; // 60-100px
+        
+        // Random starting position (off-screen or edge)
+        const startSide = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+        let startX, startY, endX, endY;
+        
+        switch(startSide) {
+          case 0: // Start from top
+            startX = Math.random() * 100;
+            startY = -10;
+            endX = Math.random() * 100;
+            endY = 110;
+            break;
+          case 1: // Start from right
+            startX = 110;
+            startY = Math.random() * 100;
+            endX = -10;
+            endY = Math.random() * 100;
+            break;
+          case 2: // Start from bottom
+            startX = Math.random() * 100;
+            startY = 110;
+            endX = Math.random() * 100;
+            endY = -10;
+            break;
+          case 3: // Start from left
+            startX = -10;
+            startY = Math.random() * 100;
+            endX = 110;
+            endY = Math.random() * 100;
+            break;
+        }
+        
+        // Animation duration and delay
+        const duration = Math.random() * 8 + 6; // 6-14 seconds
+        const delay = Math.random() * 5; // 0-5 second delay
+        
+        imgElement.src = imgPath;
+        imgElement.alt = '';
+        imgElement.className = 'shooting-star';
+        imgElement.style.cssText = `
+          position: absolute;
+          width: ${size}px;
+          height: ${size}px;
+          left: ${startX}%;
+          top: ${startY}%;
+          object-fit: contain;
+          opacity: 0;
+          filter: drop-shadow(0 0 12px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)) 
+                  drop-shadow(0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5));
+          animation: shootingStar${i} ${duration}s ease-in-out ${delay}s infinite;
+          transform-origin: center center;
+        `;
+        
+        particleBg.appendChild(imgElement);
+        
+        // Create shooting star animation with trail effect
+        const imgStyle = document.createElement('style');
+        imgStyle.textContent = `
+          @keyframes shootingStar${i} {
+            0% { 
+              left: ${startX}%;
+              top: ${startY}%;
+              opacity: 0;
+              transform: rotate(${Math.random() * 360}deg) scale(0.5);
+              filter: drop-shadow(0 0 12px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)) 
+                      drop-shadow(0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5))
+                      blur(0px);
+            }
+            10% { 
+              opacity: 1;
+              transform: rotate(${Math.random() * 360}deg) scale(1);
+            }
+            50% { 
+              left: ${(startX + endX) / 2}%;
+              top: ${(startY + endY) / 2}%;
+              opacity: 1;
+              transform: rotate(${Math.random() * 360}deg) scale(1.1);
+              filter: drop-shadow(0 0 15px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)) 
+                      drop-shadow(0 0 25px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7))
+                      blur(0px);
+            }
+            90% { 
+              opacity: 1;
+              transform: rotate(${Math.random() * 360}deg) scale(0.9);
+            }
+            100% { 
+              left: ${endX}%;
+              top: ${endY}%;
+              opacity: 0;
+              transform: rotate(${Math.random() * 360}deg) scale(0.5);
+              filter: drop-shadow(0 0 12px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)) 
+                      drop-shadow(0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5))
+                      blur(1px);
+            }
+          }
+        `;
+        document.head.appendChild(imgStyle);
+      }
+    });
+    
+    this.detailView.insertBefore(particleBg, this.detailView.firstChild);
+    
+    // Set dark base background
+    this.detailView.style.background = `
+      radial-gradient(ellipse at center, rgba(15, 20, 45, 1) 0%, rgba(5, 8, 20, 1) 100%)
+    `;
+    
+    // Apply color theme to title card
+    const titleCard = this.detailView.querySelector('.title-card');
+    if (titleCard) {
+      titleCard.style.background = `linear-gradient(135deg, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) 100%)`;
+      titleCard.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+      
+      const title = titleCard.querySelector('h2');
+      if (title) {
+        title.style.textShadow = `
+          0 0 10px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1),
+          0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
+          0 0 30px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
+          0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)
+        `;
+      }
+    }
+    
+    // Apply color theme to all cards
+    const cards = this.detailView.querySelectorAll('.wall-box:not(.title-card)');
+    cards.forEach(card => {
+      card.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+      
+      // Update card title color
+      const h3 = card.querySelector('h3');
+      if (h3) {
+        h3.style.color = color;
+      }
+      
+      // Update list item borders
+      const listItems = card.querySelectorAll('li');
+      listItems.forEach(li => {
+        li.style.borderLeftColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`;
+        li.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)`;
+      });
+      
+      // Update links
+      const links = card.querySelectorAll('.detail-link');
+      links.forEach(link => {
+        link.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`;
+        link.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+      });
+    });
+    
+    // Update back button
+    if (this.backBtn) {
+      this.backBtn.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
+      this.backBtn.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+    }
+  }
+  
+  /**
    * Load images from portfolio folder into cards
    * @param {Object} data - Portfolio item data
    */
   loadPortfolioImages(data) {
     const folder = data.folder || data.id;
     const basePath = `assets/portfolios/${folder}/`;
+    
+    console.log('Loading images for portfolio:', data.title, 'from:', basePath);
     
     // Card names mapping to folder names
     const cardFolders = {
@@ -119,16 +417,23 @@ class DetailView {
     // Load images for each card
     Object.keys(cardFolders).forEach(cardName => {
       const card = this.detailView.querySelector(`[data-card="${cardName}"]`);
-      if (!card) return;
+      if (!card) {
+        console.log('Card not found:', cardName);
+        return;
+      }
       
       const imagesContainer = card.querySelector('.card-images');
-      if (!imagesContainer) return;
+      if (!imagesContainer) {
+        console.log('Images container not found for card:', cardName);
+        return;
+      }
       
       // Clear previous images
       imagesContainer.innerHTML = '';
       
       // Try to load images from the card's folder
       const cardPath = `${basePath}${cardFolders[cardName]}/`;
+      console.log('Loading images from:', cardPath);
       
       // Try common image names (1.jpg, 2.jpg, etc.)
       this.loadImagesFromFolder(cardPath, imagesContainer, 5);
@@ -142,31 +447,44 @@ class DetailView {
    * @param {number} maxImages - Maximum number of images to try loading
    */
   loadImagesFromFolder(folderPath, container, maxImages = 5) {
+    console.log('Trying to load images from:', folderPath);
     let loadedCount = 0;
     
     for (let i = 1; i <= maxImages; i++) {
       const img = document.createElement('img');
-      img.src = `${folderPath}${i}.jpg`;
+      const jpgPath = `${folderPath}${i}.jpg`;
+      const pngPath = `${folderPath}${i}.png`;
+      
       img.alt = `Portfolio image ${i}`;
       img.loading = 'lazy';
-      img.style.display = 'none';
       
-      img.onload = () => {
-        img.style.display = 'block';
+      // Try JPG first
+      img.src = jpgPath;
+      console.log('Attempting to load:', jpgPath);
+      
+      img.onload = function() {
+        console.log('✓ Image loaded successfully:', this.src);
         loadedCount++;
       };
       
-      img.onerror = () => {
-        // Try .png extension
-        img.src = `${folderPath}${i}.png`;
-        img.onerror = () => {
-          // Remove if neither jpg nor png exists
-          img.remove();
+      img.onerror = function() {
+        console.log('✗ JPG failed, trying PNG:', pngPath);
+        // Try PNG
+        this.src = pngPath;
+        this.onerror = function() {
+          console.log('✗ PNG also failed, removing element');
+          this.remove();
+        };
+        this.onload = function() {
+          console.log('✓ PNG loaded successfully:', this.src);
+          loadedCount++;
         };
       };
       
       container.appendChild(img);
     }
+    
+    console.log('Appended', maxImages, 'image elements to container');
   }
   
   /**
