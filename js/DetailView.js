@@ -24,9 +24,9 @@ class DetailView {
     this.targetPosition = { x: 0, y: 0, z: 600 };
     this.moveSpeed = 8; // Faster movement for hallway
     
-    // Hallway boundaries
-    this.hallwayLength = 2800; // Total length of hallway (title card is at -2400)
-    this.hallwayWidth = 500; // Width boundaries (left/right) - wider hallway
+    // Hallway boundaries - extended to accommodate new cards at -3000px
+    this.hallwayLength = 3200; // Length to furthest card at -3000px
+    this.hallwayWidth = 700; // Width boundaries (left/right) - wider hallway to accommodate orbs at ±650px
     this.hallwayForwardLimit = 600; // Forward boundary (entrance)
     
     // Movement state
@@ -68,29 +68,18 @@ class DetailView {
     // Update title card with portfolio name
     const portfolioTitle = document.getElementById('portfolio-title');
     if (portfolioTitle) {
-      portfolioTitle.textContent = `${data.title}'s Portfolio`;
+      portfolioTitle.textContent = `${data.title}'s Memory Hall`;
     }
     
     // Apply color theme based on portfolio color
     this.applyColorTheme(data.color, data);
     
-    // Add special info card for Kylabidaboo and adjust hallway
-    if (data.title && data.title.toLowerCase().includes('kylabidaboo')) {
-      this.addKylabidabooInfoCard(data.color);
-      // Adjust starting position to be further back to see entrance cards
-      this.position = { x: 0, y: 0, z: 1400 };
-      this.targetPosition = { x: 0, y: 0, z: 1400 };
-      // Extend hallway boundaries for entrance cards
-      this.hallwayLength = 3300; // Extended backward to accommodate title card
-      this.hallwayForwardLimit = 1500; // Extended forward for entrance area
-    } else {
-      // Reset to default starting position
-      this.position = { x: 0, y: 0, z: 600 };
-      this.targetPosition = { x: 0, y: 0, z: 600 };
-      // Reset to default hallway length
-      this.hallwayLength = 2800;
-      this.hallwayForwardLimit = 600;
-    }
+    // Reset to default starting position for all portfolios
+    this.position = { x: 0, y: 0, z: 600 };
+    this.targetPosition = { x: 0, y: 0, z: 600 };
+    // Reset to default hallway length (all 4 placeholder cards visible)
+    this.hallwayLength = 3200;
+    this.hallwayForwardLimit = 600;
     
     // Load images from portfolio folder
     this.loadPortfolioImages(data);
@@ -157,15 +146,17 @@ class DetailView {
       overflow: hidden;
     `;
     
-    // Create small flying particles with accent color
-    for (let i = 0; i < 30; i++) {
+    // Create small flying particles with bright yellow color for memory hall
+    const yellowStars = { r: 255, g: 255, b: 102 }; // Bright lemon yellow
+    
+    for (let i = 0; i < 50; i++) { // Increased to 50 particles
       const particle = document.createElement('div');
-      const size = Math.random() * 8 + 4; // Small particles: 4-12px
+      const size = Math.random() * 10 + 6; // Slightly bigger: 6-16px
       const x = Math.random() * 100;
       const y = Math.random() * 100;
       const duration = Math.random() * 15 + 10; // 10-25s animation
       const delay = Math.random() * 5;
-      const opacity = Math.random() * 0.4 + 0.2; // 0.2-0.6 opacity
+      const opacity = Math.random() * 0.6 + 0.4; // Brighter: 0.4-1.0 opacity
       
       // Random movement pattern
       const moveX = (Math.random() - 0.5) * 200; // -100 to 100px
@@ -177,9 +168,10 @@ class DetailView {
         height: ${size}px;
         left: ${x}%;
         top: ${y}%;
-        background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity});
+        background: rgba(${yellowStars.r}, ${yellowStars.g}, ${yellowStars.b}, ${opacity});
         border-radius: 50%;
-        box-shadow: 0 0 ${size * 2}px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6);
+        box-shadow: 0 0 ${size * 3}px rgba(${yellowStars.r}, ${yellowStars.g}, ${yellowStars.b}, 0.8),
+                    0 0 ${size * 5}px rgba(${yellowStars.r}, ${yellowStars.g}, ${yellowStars.b}, 0.4);
         animation: floatParticle${i} ${duration}s ease-in-out ${delay}s infinite;
       `;
       
@@ -360,10 +352,8 @@ class DetailView {
     const existingArc = this.wallGrid.querySelector('.entrance-arch');
     if (existingArc) existingArc.remove();
     
-    // Determine arch position based on whether there are entrance cards
-    // Check if this portfolio has entrance cards (like Kylabidaboo)
-    const hasEntranceCards = data.title && data.title.toLowerCase().includes('kylabidaboo');
-    const archZPosition = hasEntranceCards ? 1100 : 700; // Move arch further forward if entrance cards exist
+    // Standard arch position for all portfolios
+    const archZPosition = 700;
     
     // Create container with overflow to hide bottom line only
     const archContainer = document.createElement('div');
@@ -493,51 +483,26 @@ class DetailView {
     const existingFloorEdges = this.wallGrid.querySelectorAll('.floor-edge');
     existingFloorEdges.forEach(edge => edge.remove());
     
-    // Use the same hasEntranceCards check for floor edges
-    const floorTopPos = hasEntranceCards ? -3000 : -2000;
-    const floorHeight = hasEntranceCards ? 5500 : 4000;
-    const startEdgeY = hasEntranceCards ? 2500 : 2000;
-    const endEdgeY = hasEntranceCards ? -3000 : -2000;
-    const floorTranslateZ = hasEntranceCards ? -450 : -200;
+    // Standard floor for all portfolios
+    // Remove any existing floor extension first
+    const existingFloorExt = document.querySelector('.dynamic-floor-extension');
+    if (existingFloorExt) existingFloorExt.remove();
     
-    // Extend the actual floor (CSS) if entrance cards exist
-    if (hasEntranceCards) {
-      // Remove any existing floor extension first
-      const existingFloorExt = document.querySelector('.dynamic-floor-extension');
-      if (existingFloorExt) existingFloorExt.remove();
-      
-      const floorExtStyle = document.createElement('style');
-      floorExtStyle.className = 'dynamic-floor-extension';
-      floorExtStyle.textContent = `
-        #detail-view .wall-grid::before {
-          top: -3000px !important;
-          height: 5500px !important;
-          transform: rotateX(90deg) translateZ(-450px) !important;
-          box-shadow: 
-            inset 0 0 0 4px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
-            inset 0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
-            inset 0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) !important;
-        }
-      `;
-      document.head.appendChild(floorExtStyle);
-    } else {
-      // Remove floor extension if it exists (for non-entrance portfolios)
-      const existingFloorExt = document.querySelector('.dynamic-floor-extension');
-      if (existingFloorExt) existingFloorExt.remove();
-      
-      // Add glowing border for normal floor
-      const floorBorderStyle = document.createElement('style');
-      floorBorderStyle.className = 'dynamic-floor-extension';
-      floorBorderStyle.textContent = `
-        #detail-view .wall-grid::before {
-          box-shadow: 
-            inset 0 0 0 4px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
-            inset 0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
-            inset 0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) !important;
-        }
-      `;
-      document.head.appendChild(floorBorderStyle);
-    }
+    // Add glowing border for floor
+    const floorBorderStyle = document.createElement('style');
+    floorBorderStyle.className = 'dynamic-floor-extension';
+    floorBorderStyle.textContent = `
+      #detail-view .wall-grid::before {
+        top: -5000px !important;
+        height: 7000px !important;
+        transform: rotateX(90deg) translateZ(-1700px) !important;
+        box-shadow: 
+          inset 0 0 0 4px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
+          inset 0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
+          inset 0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) !important;
+      }
+    `;
+    document.head.appendChild(floorBorderStyle);
     
     // Remove the separate edge elements since we're using floor border now
     const leftEdge = null;
@@ -571,47 +536,83 @@ class DetailView {
     // Apply color theme to title card
     const titleCard = this.detailView.querySelector('.title-card');
     if (titleCard) {
-      titleCard.style.background = `linear-gradient(135deg, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) 100%)`;
-      titleCard.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+      titleCard.style.background = `radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) 40%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) 100%)`;
+      titleCard.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
+      titleCard.style.boxShadow = `
+        0 0 60px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1),
+        0 0 120px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
+        0 30px 80px rgba(0, 0, 0, 0.6),
+        inset 0 0 80px rgba(255, 255, 255, 0.2)
+      `;
       
       const title = titleCard.querySelector('h2');
       if (title) {
         title.style.textShadow = `
-          0 0 10px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1),
-          0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
-          0 0 30px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6),
-          0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)
+          0 0 15px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1),
+          0 0 30px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8),
+          0 0 45px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)
         `;
       }
     }
     
     // Apply color theme to all cards
     const cards = this.detailView.querySelectorAll('.wall-box:not(.title-card)');
+    
+    // Gold yellow color for all memory orbs
+    const goldYellow = { r: 255, g: 215, b: 0 }; // Gold yellow RGB
+    
     cards.forEach(card => {
-      card.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+      card.style.borderColor = `rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.3)`;
       
-      // Update card title color
+      // Apply gold yellow glow to orbs
+      card.style.boxShadow = `
+        0 0 40px rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.6),
+        0 0 80px rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.4),
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 0 60px rgba(255, 255, 255, 0.1),
+        inset -20px -20px 40px rgba(0, 0, 0, 0.3),
+        0 0 0 8px rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.15),
+        0 0 0 16px rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.1),
+        0 0 0 24px rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.05)
+      `;
+      
+      // Apply gold yellow overlay to card images for memory orb effect
+      const cardImages = card.querySelector('.card-images');
+      if (cardImages) {
+        cardImages.style.background = `radial-gradient(circle at 50% 50%, 
+          rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.3) 0%,
+          rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.4) 50%,
+          rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.5) 100%)`;
+        cardImages.style.borderColor = `rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.8)`;
+        
+        // Apply gold yellow vignette effect using CSS custom properties
+        cardImages.style.setProperty('--vignette-color-r', goldYellow.r);
+        cardImages.style.setProperty('--vignette-color-g', goldYellow.g);
+        cardImages.style.setProperty('--vignette-color-b', goldYellow.b);
+      }
+      
+      // Update card title color to gold yellow
       const h3 = card.querySelector('h3');
       if (h3) {
-        h3.style.color = color;
+        h3.style.color = `rgb(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b})`;
       }
       
       // Update list item borders
       const listItems = card.querySelectorAll('li');
       listItems.forEach(li => {
-        li.style.borderLeftColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`;
-        li.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)`;
+        li.style.borderLeftColor = `rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.5)`;
+        li.style.background = `rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.05)`;
       });
       
       // Update links
       const links = card.querySelectorAll('.detail-link');
       links.forEach(link => {
-        link.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`;
-        link.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+        link.style.background = `rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.15)`;
+        link.style.borderColor = `rgba(${goldYellow.r}, ${goldYellow.g}, ${goldYellow.b}, 0.3)`;
       });
     });
     
-    // Update back button
+    // Update back button with accent color (not gold yellow)
     if (this.backBtn) {
       this.backBtn.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
       this.backBtn.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
@@ -635,7 +636,11 @@ class DetailView {
       'technologies': 'technologies',
       'details': 'details',
       'links': 'links',
-      'contact': 'contact'
+      'contact': 'contact',
+      'placeholder1': 'placeholder1',
+      'placeholder2': 'placeholder2',
+      'placeholder3': 'placeholder3',
+      'placeholder4': 'placeholder4'
     };
     
     // Load images for each card
@@ -665,15 +670,53 @@ class DetailView {
   }
   
   /**
-   * Load images from a folder
+   * Load images and videos from a folder
    * @param {string} folderPath - Path to the folder
-   * @param {HTMLElement} container - Container to append images to
-   * @param {number} maxImages - Maximum number of images to try loading
+   * @param {HTMLElement} container - Container to append media to
+   * @param {number} maxImages - Maximum number of files to try loading
    */
   loadImagesFromFolder(folderPath, container, maxImages = 5) {
-    console.log('Trying to load images from:', folderPath);
+    console.log('Trying to load media from:', folderPath);
     let loadedCount = 0;
     
+    // First, try to load any video files with common names
+    const videoExtensions = ['mp4', 'webm', 'mov'];
+    videoExtensions.forEach(ext => {
+      const video = document.createElement('video');
+      const videoPath = `${folderPath}1.${ext}`;
+      
+      video.src = videoPath;
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.style.cssText = `
+        min-width: 100%;
+        min-height: 100%;
+        width: 150%;
+        height: 150%;
+        object-fit: cover;
+        object-position: center;
+        opacity: 0.85;
+        filter: brightness(0.9) contrast(1.1) saturate(0.8) hue-rotate(10deg);
+        mix-blend-mode: luminosity;
+      `;
+      
+      video.onloadeddata = function() {
+        console.log('✓ Video loaded successfully:', this.src);
+        this.play().catch(e => console.log('Video autoplay failed:', e));
+        loadedCount++;
+      };
+      
+      video.onerror = function() {
+        console.log('✗ Video failed:', videoPath);
+        this.remove();
+      };
+      
+      container.appendChild(video);
+    });
+    
+    // Then try numbered image files
     for (let i = 1; i <= maxImages; i++) {
       const img = document.createElement('img');
       const jpgPath = `${folderPath}${i}.jpg`;
@@ -708,55 +751,7 @@ class DetailView {
       container.appendChild(img);
     }
     
-    console.log('Appended', maxImages, 'image elements to container');
-  }
-  
-  /**
-   * Add special info card for Kylabidaboo's portfolio
-   * @param {string} color - Accent color for the card
-   */
-  addKylabidabooInfoCard(color) {
-    // Remove existing info card if any
-    const existingCard = this.wallGrid.querySelector('.box-8');
-    if (existingCard) existingCard.remove();
-    
-    // Convert hex to RGB
-    const hexToRgb = (hex) => {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : null;
-    };
-    
-    const rgb = hexToRgb(color);
-    if (!rgb) return;
-    
-    // Create the info card
-    const infoCard = document.createElement('div');
-    infoCard.className = 'wall-box box-8 info-card';
-    infoCard.innerHTML = `
-      <h3>About</h3>
-      <div class="info-content">
-        <p class="info-label">Fullname:</p>
-        <p class="info-value">Princess Kyla Gosim Brioso</p>
-        
-        <p class="info-label">Age:</p>
-        <p class="info-value">22</p>
-        
-        <p class="info-label">Birthday:</p>
-        <p class="info-value">Feb. 4, 2004</p>
-        
-        <p class="info-label">Ethnic:</p>
-        <p class="info-value">Bicolana, Caviteña</p>
-      </div>
-    `;
-    
-    // Apply accent color border
-    infoCard.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
-    
-    this.wallGrid.appendChild(infoCard);
+    console.log('Appended media elements to container');
   }
   
   /**
